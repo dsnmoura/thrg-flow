@@ -29,9 +29,13 @@ import {
   Copy,
   Check,
   Palette,
-  Wand2
+  Wand2,
+  Share,
+  Calendar
 } from "lucide-react";
 import TemplateCustomizer from "@/components/TemplateCustomizer";
+import SocialExport from "@/components/SocialExport";
+import PostScheduler from "@/components/PostScheduler";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -240,7 +244,7 @@ const CreatePost = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="create" className="flex items-center gap-2">
             <Wand2 className="h-4 w-4" />
             Gerar Conteúdo
@@ -248,6 +252,14 @@ const CreatePost = () => {
           <TabsTrigger value="customize" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
             Personalizar Template
+          </TabsTrigger>
+          <TabsTrigger value="export" className="flex items-center gap-2">
+            <Share className="h-4 w-4" />
+            Exportar
+          </TabsTrigger>
+          <TabsTrigger value="schedule" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Agendar
           </TabsTrigger>
         </TabsList>
 
@@ -628,6 +640,34 @@ const CreatePost = () => {
           <TemplateCustomizer 
             templateData={selectedTemplate ? { id: selectedTemplate, network: selectedNetwork } : null}
             onSave={handleCustomizationSave}
+          />
+        </TabsContent>
+
+        <TabsContent value="export" className="space-y-6 mt-6">
+          {generatedContent ? (
+            <SocialExport
+              content={generatedContent}
+              selectedNetwork={selectedNetwork}
+              selectedTemplate={selectedTemplate}
+            />
+          ) : (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Share className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Nenhum conteúdo para exportar</h3>
+                <p className="text-muted-foreground">
+                  Gere um conteúdo primeiro para poder exportá-lo para as redes sociais
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="schedule" className="space-y-6 mt-6">
+          <PostScheduler
+            content={generatedContent}
+            selectedNetwork={selectedNetwork}
+            selectedTemplate={selectedTemplate}
           />
         </TabsContent>
       </Tabs>
