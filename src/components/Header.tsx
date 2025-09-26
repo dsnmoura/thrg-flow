@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, Menu } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import MobileMenu from "./MobileMenu";
 
 const Header = () => {
   return (
@@ -34,14 +35,12 @@ const Header = () => {
             <Button variant="ghost" className="hidden sm:inline-flex">
               <a href="/dashboard">Entrar</a>
             </Button>
-            <Button variant="gradient">
+            <Button variant="default" className="gradient-primary">
               <a href="/dashboard">Dashboard</a>
             </Button>
             
-            {/* Mobile menu button */}
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
+            {/* Mobile menu */}
+            <MobileMenu />
           </div>
         </div>
       </div>

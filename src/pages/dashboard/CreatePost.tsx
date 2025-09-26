@@ -1,414 +1,227 @@
-import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
-import { useState } from "react";
 import { 
-  Instagram, 
-  Linkedin,
-  ArrowRight,
-  ArrowLeft,
-  Sparkles,
+  Palette, 
+  Wand2, 
+  Download, 
+  Share2, 
+  Calendar, 
+  Eye,
   Settings,
-  Check,
-  Play,
-  Image,
-  MessageCircle
+  Smartphone,
+  Monitor
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import TemplateCustomizer from "@/components/TemplateCustomizer";
+import DragDropEditor from "@/components/DragDropEditor";
+import { useTemplate } from "@/contexts/TemplateContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 
 const CreatePost = () => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [selectedNetwork, setSelectedNetwork] = useState<string>("");
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
-  const [postContent, setPostContent] = useState<string>("");
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [generatedPost, setGeneratedPost] = useState<any>(null);
+  const { selectedTemplate } = useTemplate();
+  const isMobile = useIsMobile();
+  const [activeTab, setActiveTab] = useState("customize");
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
+  
+  if (!selectedTemplate) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="text-center space-y-4">
+          <Wand2 className="h-16 w-16 text-muted-foreground mx-auto" />
+          <h2 className="text-2xl font-bold">Nenhum template selecionado</h2>
+          <p className="text-muted-foreground max-w-md">
+            Escolha um template na página inicial para começar a personalizar seu post.
+          </p>
+          <Button variant="default" className="gradient-primary">
+            <a href="/">Escolher Template</a>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-  const totalSteps = 4;
-
-  const networks = [
-    { 
-      id: "instagram", 
-      name: "Instagram", 
-      icon: Instagram, 
-      description: "Posts, Stories e Reels",
-      color: "from-pink-500 to-purple-600"
-    },
-    { 
-      id: "linkedin", 
-      name: "LinkedIn", 
-      icon: Linkedin, 
-      description: "Posts profissionais",
-      color: "from-blue-600 to-blue-800"
-    },
-    { 
-      id: "tiktok", 
-      name: "TikTok", 
-      icon: MessageCircle, 
-      description: "Vídeos curtos",
-      color: "from-gray-800 to-black"
-    },
-  ];
-
-  const templates = {
-    instagram: [
-      { 
-        id: "ig-post", 
-        name: "Post Feed", 
-        icon: Image, 
-        description: "Post clássico do Instagram"
-      },
-      { 
-        id: "ig-stories", 
-        name: "Stories", 
-        icon: Play, 
-        description: "Stories verticais interativos"
-      }
-    ],
-    linkedin: [
-      { 
-        id: "li-post", 
-        name: "Post Profissional", 
-        icon: Image, 
-        description: "Post empresarial otimizado"
-      }
-    ],
-    tiktok: [
-      { 
-        id: "tt-video", 
-        name: "Vídeo Viral", 
-        icon: Play, 
-        description: "Vídeo curto e envolvente"
-      }
-    ]
+  const handleSave = (settings: any) => {
+    console.log('Settings saved:', settings);
+    toast.success("Personalização salva!");
   };
 
-  const getTemplatesForNetwork = (networkId: string) => {
-    return templates[networkId as keyof typeof templates] || [];
+  const handleExport = () => {
+    toast.success("Post exportado com sucesso!");
   };
 
-  const contentExamples = [
-    "Lançamento do novo produto revolucionário da nossa empresa",
-    "Dica rápida para aumentar sua produtividade no trabalho",
-    "Promoção especial de final de ano - descontos imperdíveis",
-    "Por trás das cenas: como criamos nossos produtos"
-  ];
-
-  const generateContent = async () => {
-    if (!selectedNetwork || !selectedTemplate || !postContent) {
-      toast.error("Preencha todas as informações antes de gerar o conteúdo");
-      return;
-    }
-
-    setIsGenerating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-post-content', {
-        body: {
-          network: selectedNetwork,
-          template: selectedTemplate,
-          content: postContent,
-          generateImages: true,
-          generateCaption: true,
-          generateHashtags: true
-        }
-      });
-
-      if (error) {
-        console.error('Error generating content:', error);
-        toast.error("Erro ao gerar conteúdo. Tente novamente.");
-        return;
-      }
-
-      setGeneratedPost(data);
-      setCurrentStep(4);
-      toast.success("Conteúdo gerado com sucesso!");
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error("Erro ao gerar conteúdo. Tente novamente.");
-    } finally {
-      setIsGenerating(false);
-    }
+  const handleSchedule = () => {
+    toast.success("Post agendado!");
   };
-
-  const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const canProceedStep1 = selectedNetwork;
-  const canProceedStep2 = selectedTemplate;
-  const canProceedStep3 = postContent.length >= 10;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header com Progresso */}
-      <div className="text-center space-y-4">
+    <div className={`space-y-6 ${isMobile ? 'pb-20' : ''}`}>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Criar Post</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Criar Post</h1>
           <p className="text-muted-foreground">
-            Crie conteúdo profissional em 4 passos simples
+            Personalize seu template selecionado
           </p>
         </div>
-        
-        <div className="w-full max-w-md mx-auto">
-          <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
-          <div className="flex justify-between text-sm text-muted-foreground mt-2">
-            <span>Passo {currentStep}</span>
-            <span>{totalSteps} passos</span>
-          </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">{selectedTemplate.platform}</Badge>
+          <Badge variant="secondary">{selectedTemplate.type}</Badge>
         </div>
       </div>
 
-      {/* Passo 1: Escolha da Rede Social */}
-      {currentStep === 1 && (
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl">Escolha a rede social</CardTitle>
-            <CardDescription>
-              Onde você quer publicar seu conteúdo?
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {networks.map((network) => (
-                <div
-                  key={network.id}
-                  onClick={() => setSelectedNetwork(network.id)}
-                  className={`
-                    group p-6 rounded-xl border-2 cursor-pointer transition-smooth hover:scale-105
-                    ${selectedNetwork === network.id 
-                      ? 'border-primary bg-primary/5 shadow-card' 
-                      : 'border-border hover:border-primary/30'
-                    }
-                  `}
-                >
-                  <div className="text-center space-y-4">
-                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${network.color} flex items-center justify-center mx-auto`}>
-                      <network.icon className="h-8 w-8 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">{network.name}</h3>
-                      <p className="text-sm text-muted-foreground">{network.description}</p>
-                    </div>
-                    {selectedNetwork === network.id && (
-                      <div className="flex justify-center">
-                        <Badge className="bg-primary">Selecionado</Badge>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+      {/* Template Info */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-4">
+            <img
+              src={selectedTemplate.image}
+              alt={selectedTemplate.title}
+              className="w-16 h-16 rounded-lg object-cover"
+            />
+            <div className="flex-1">
+              <h3 className="font-semibold">{selectedTemplate.title}</h3>
+              <p className="text-sm text-muted-foreground">{selectedTemplate.description}</p>
             </div>
-            
-            {canProceedStep1 && (
-              <div className="flex justify-center mt-6">
-                <Button onClick={nextStep} size="lg" className="px-8">
-                  Continuar
-                  <ArrowRight className="h-4 w-4 ml-2" />
+            {!isMobile && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={previewMode === 'desktop' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPreviewMode('desktop')}
+                >
+                  <Monitor className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={previewMode === 'mobile' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPreviewMode('mobile')}
+                >
+                  <Smartphone className="h-4 w-4" />
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Passo 2: Escolha do Template */}
-      {currentStep === 2 && (
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl">Escolha o formato</CardTitle>
-            <CardDescription>
-              Que tipo de conteúdo você quer criar para o {networks.find(n => n.id === selectedNetwork)?.name}?
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {getTemplatesForNetwork(selectedNetwork).map((template) => (
-                <div
-                  key={template.id}
-                  onClick={() => setSelectedTemplate(template.id)}
-                  className={`
-                    group p-6 rounded-xl border-2 cursor-pointer transition-smooth hover:scale-105
-                    ${selectedTemplate === template.id 
-                      ? 'border-primary bg-primary/5 shadow-card' 
-                      : 'border-border hover:border-primary/30'
-                    }
-                  `}
-                >
-                  <div className="text-center space-y-4">
-                    <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mx-auto">
-                      <template.icon className="h-10 w-10 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">{template.name}</h3>
-                      <p className="text-sm text-muted-foreground">{template.description}</p>
-                    </div>
-                    {selectedTemplate === template.id && (
-                      <div className="flex justify-center">
-                        <Badge className="bg-primary">Selecionado</Badge>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="flex justify-between mt-6">
-              <Button onClick={prevStep} variant="outline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar
-              </Button>
-              {canProceedStep2 && (
-                <Button onClick={nextStep} size="lg">
-                  Continuar
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Editor Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2' : 'grid-cols-3'}`}>
+          <TabsTrigger value="customize" className="flex items-center gap-2">
+            <Palette className="h-4 w-4" />
+            {!isMobile && "Personalizar"}
+          </TabsTrigger>
+          <TabsTrigger value="drag-drop" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            {!isMobile && "Arrastar & Soltar"}
+          </TabsTrigger>
+          {!isMobile && (
+            <TabsTrigger value="preview" className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              Preview
+            </TabsTrigger>
+          )}
+        </TabsList>
 
-      {/* Passo 3: Conteúdo */}
-      {currentStep === 3 && (
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl">Conte-nos sobre seu post</CardTitle>
-            <CardDescription>
-              Descreva o que você quer comunicar. Nossa IA criará o conteúdo perfeito!
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-3">
-              <Textarea
-                placeholder="Ex: Quero promover o lançamento do nosso novo produto..."
-                value={postContent}
-                onChange={(e) => setPostContent(e.target.value)}
-                className="min-h-[120px] resize-none text-base"
+        <TabsContent value="customize" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Personalização Avançada</CardTitle>
+              <CardDescription>
+                Ajuste cores, fontes, logotipos e outros elementos visuais
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TemplateCustomizer 
+                templateData={selectedTemplate} 
+                onSave={handleSave}
               />
-              <p className="text-sm text-muted-foreground">
-                Seja específico para obter melhores resultados (mín. 10 caracteres)
-              </p>
-            </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            {/* Exemplos */}
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-foreground">Precisa de inspiração?</p>
-              <div className="grid gap-2">
-                {contentExamples.map((example, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setPostContent(example)}
-                    className="text-left p-3 rounded-lg bg-muted/30 hover:bg-muted transition-smooth text-sm border border-transparent hover:border-border"
-                  >
-                    {example}
-                  </button>
-                ))}
-              </div>
-            </div>
+        <TabsContent value="drag-drop" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Editor Drag & Drop</CardTitle>
+              <CardDescription>
+                Arraste e solte elementos para personalizar seu template de forma intuitiva
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DragDropEditor 
+                templateData={selectedTemplate} 
+                onSave={handleSave}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            <div className="flex justify-between">
-              <Button onClick={prevStep} variant="outline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar
-              </Button>
-              {canProceedStep3 && (
-                <Button 
-                  onClick={generateContent}
-                  disabled={isGenerating}
-                  size="lg"
-                  className="bg-gradient-primary"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Settings className="h-4 w-4 mr-2 animate-spin" />
-                      Gerando...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Gerar Post
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Passo 4: Post Gerado */}
-      {currentStep === 4 && generatedPost && (
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl flex items-center justify-center gap-2">
-              <Check className="h-6 w-6 text-green-500" />
-              Post Criado com Sucesso!
-            </CardTitle>
-            <CardDescription>
-              Seu conteúdo foi gerado e está pronto para uso
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Preview do Post Gerado */}
-            <div className="bg-muted/30 rounded-lg p-6 space-y-4">
-              <div className="text-center">
-                <Badge className="mb-4">{networks.find(n => n.id === selectedNetwork)?.name}</Badge>
-                <div className="aspect-square max-w-sm mx-auto bg-white rounded-lg shadow-card p-4 flex items-center justify-center">
-                  <div className="text-center space-y-2">
-                    <Image className="h-12 w-12 text-primary mx-auto" />
-                    <p className="text-sm font-medium">Post Visual</p>
-                    <p className="text-xs text-muted-foreground">Imagem será gerada aqui</p>
+        {!isMobile && (
+          <TabsContent value="preview" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="h-5 w-5" />
+                  Preview do Post
+                </CardTitle>
+                <CardDescription>
+                  Visualize como seu post ficará na plataforma selecionada
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className={`mx-auto bg-muted/30 rounded-lg p-8 ${
+                  previewMode === 'mobile' ? 'max-w-sm' : 'max-w-2xl'
+                }`}>
+                  <div className="aspect-square bg-gradient-to-br from-background to-muted rounded-lg overflow-hidden shadow-card">
+                    <img
+                      src={selectedTemplate.image}
+                      alt="Post Preview"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 </div>
-              </div>
-              
-              {generatedPost.caption && (
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Legenda:</h4>
-                  <div className="bg-background rounded-lg p-3 text-sm">
-                    {generatedPost.caption}
-                  </div>
-                </div>
-              )}
-              
-              {generatedPost.hashtags && (
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Hashtags:</h4>
-                  <div className="bg-background rounded-lg p-3 text-sm text-primary">
-                    {generatedPost.hashtags}
-                  </div>
-                </div>
-              )}
-            </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+      </Tabs>
 
-            <div className="flex justify-between gap-4">
-              <Button onClick={prevStep} variant="outline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Editar Post
-              </Button>
-              <div className="flex gap-2">
-                <Button variant="secondary">
-                  Baixar Imagem
-                </Button>
-                <Button className="bg-gradient-primary">
-                  Publicar Agora
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Action Buttons */}
+      <div className={`${isMobile ? 'fixed bottom-4 left-4 right-4 z-50' : 'flex justify-end gap-4'}`}>
+        {isMobile ? (
+          <div className="grid grid-cols-3 gap-2">
+            <Button variant="outline" onClick={handleExport}>
+              <Download className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" onClick={handleSchedule}>
+              <Calendar className="h-4 w-4" />
+            </Button>
+            <Button className="gradient-primary">
+              <Share2 className="h-4 w-4 mr-2" />
+              Publicar
+            </Button>
+          </div>
+        ) : (
+          <>
+            <Button variant="outline" onClick={handleExport}>
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+            <Button variant="outline" onClick={handleSchedule}>
+              <Calendar className="h-4 w-4 mr-2" />
+              Agendar
+            </Button>
+            <Button className="gradient-primary">
+              <Share2 className="h-4 w-4 mr-2" />
+              Publicar Post
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 };

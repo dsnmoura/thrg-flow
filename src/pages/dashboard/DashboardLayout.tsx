@@ -3,10 +3,13 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Bell, Search, User } from "lucide-react";
 import { Outlet } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const DashboardLayout = () => {
+  const isMobile = useIsMobile();
+  
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={!isMobile}>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         
@@ -15,12 +18,12 @@ const DashboardLayout = () => {
           <header className="h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-6">
             <div className="flex items-center space-x-4">
               <SidebarTrigger />
-              <div className="relative">
+              <div className="relative hidden sm:block">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <input
                   type="text"
                   placeholder="Buscar templates, posts..."
-                  className="pl-10 pr-4 py-2 w-64 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-smooth"
+                  className={`pl-10 pr-4 py-2 ${isMobile ? 'w-full' : 'w-64'} rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-smooth`}
                 />
               </div>
             </div>
@@ -40,7 +43,7 @@ const DashboardLayout = () => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-6 overflow-auto">
+          <main className={`flex-1 ${isMobile ? 'p-4' : 'p-6'} overflow-auto`}>
             <Outlet />
           </main>
         </div>
