@@ -7,6 +7,7 @@ import { TemplateProvider } from "@/contexts/TemplateContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ChooseTemplate from "./pages/ChooseTemplate";
+import Pricing from "./pages/Pricing";
 import DashboardLayout from "./pages/dashboard/DashboardLayout";
 import DashboardOverview from "./pages/dashboard/DashboardOverview";
 import CreatePost from "./pages/dashboard/CreatePost";
@@ -28,6 +29,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/choose-template" element={<ChooseTemplate />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardOverview />} />
               <Route path="create" element={<CreatePost />} />

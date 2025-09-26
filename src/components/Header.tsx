@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 import MobileMenu from "./MobileMenu";
 
 const Header = () => {
@@ -8,14 +9,14 @@ const Header = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg gradient-primary">
               <Sparkles className="h-6 w-6 text-white" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               PostCraft
             </span>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
@@ -25,18 +26,18 @@ const Header = () => {
             <a href="#features" className="text-foreground/80 hover:text-foreground transition-smooth">
               Recursos
             </a>
-            <a href="#pricing" className="text-foreground/80 hover:text-foreground transition-smooth">
+            <Link to="/pricing" className="text-foreground/80 hover:text-foreground transition-smooth">
               Preços
-            </a>
+            </Link>
           </nav>
 
           {/* CTA Buttons */}
           <div className="flex items-center space-x-4">
             <Button variant="ghost" className="hidden sm:inline-flex">
-              <a href="/dashboard">Entrar</a>
+              <Link to="/dashboard">Entrar</Link>
             </Button>
             <Button variant="default" className="gradient-primary">
-              <a href="/dashboard">Dashboard</a>
+              <Link to="/dashboard">Dashboard</Link>
             </Button>
             
             {/* Mobile menu */}
