@@ -2,164 +2,86 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
 import { 
   Instagram, 
-  Linkedin, 
-  MessageCircle, 
-  Heart, 
-  TrendingUp, 
-  Gift, 
-  Star, 
-  Users,
-  Target,
-  Megaphone,
-  Image,
-  Video,
-  FileText,
-  LayoutGrid,
-  Play,
-  Camera,
-  PenTool,
-  Lightbulb,
+  Linkedin,
+  ArrowRight,
+  ArrowLeft,
   Sparkles,
   Settings,
-  Download,
-  Copy,
   Check,
-  Palette,
-  Wand2,
-  Share,
-  Calendar
+  Play,
+  Image,
+  MessageCircle
 } from "lucide-react";
-import TemplateCustomizer from "@/components/TemplateCustomizer";
-import SocialExport from "@/components/SocialExport";
-import PostScheduler from "@/components/PostScheduler";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const CreatePost = () => {
-  const [selectedObjective, setSelectedObjective] = useState<string>("");
+  const [currentStep, setCurrentStep] = useState(1);
   const [selectedNetwork, setSelectedNetwork] = useState<string>("");
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
-  const [postTheme, setPostTheme] = useState<string>("");
+  const [postContent, setPostContent] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [generatedContent, setGeneratedContent] = useState<any>(null);
-  const [copiedHashtags, setCopiedHashtags] = useState<boolean>(false);
-  const [copiedCaption, setCopiedCaption] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<string>("create");
-  const [customizationSettings, setCustomizationSettings] = useState<any>(null);
+  const [generatedPost, setGeneratedPost] = useState<any>(null);
 
-  const objectives = [
-    { id: "promocao", name: "Promoção", icon: Gift, color: "bg-red-500" },
-    { id: "dica", name: "Dica/Tutorial", icon: Heart, color: "bg-blue-500" },
-    { id: "novidade", name: "Novidade", icon: TrendingUp, color: "bg-green-500" },
-    { id: "depoimento", name: "Depoimento", icon: Star, color: "bg-yellow-500" },
-    { id: "engajamento", name: "Engajamento", icon: Users, color: "bg-purple-500" },
-    { id: "branding", name: "Branding", icon: Target, color: "bg-pink-500" },
-    { id: "anuncio", name: "Anúncio", icon: Megaphone, color: "bg-orange-500" },
-  ];
+  const totalSteps = 4;
 
   const networks = [
-    { id: "instagram", name: "Instagram", icon: Instagram, formats: ["Post", "Stories", "Reels"] },
-    { id: "linkedin", name: "LinkedIn", icon: Linkedin, formats: ["Post", "Artigo", "Carrossel"] },
-    { id: "tiktok", name: "TikTok", icon: MessageCircle, formats: ["Vídeo", "Stories"] },
+    { 
+      id: "instagram", 
+      name: "Instagram", 
+      icon: Instagram, 
+      description: "Posts, Stories e Reels",
+      color: "from-pink-500 to-purple-600"
+    },
+    { 
+      id: "linkedin", 
+      name: "LinkedIn", 
+      icon: Linkedin, 
+      description: "Posts profissionais",
+      color: "from-blue-600 to-blue-800"
+    },
+    { 
+      id: "tiktok", 
+      name: "TikTok", 
+      icon: MessageCircle, 
+      description: "Vídeos curtos",
+      color: "from-gray-800 to-black"
+    },
   ];
 
   const templates = {
     instagram: [
       { 
-        id: "ig-feed-quadrado", 
-        name: "Post Quadrado", 
+        id: "ig-post", 
+        name: "Post Feed", 
         icon: Image, 
-        description: "Formato 1:1 ideal para feed", 
-        size: "1080x1080",
-        category: "Feed"
+        description: "Post clássico do Instagram"
       },
       { 
         id: "ig-stories", 
         name: "Stories", 
-        icon: Camera, 
-        description: "Formato vertical para stories", 
-        size: "1080x1920",
-        category: "Stories"
-      },
-      { 
-        id: "ig-carrossel", 
-        name: "Carrossel", 
-        icon: LayoutGrid, 
-        description: "Múltiplas imagens deslizáveis", 
-        size: "1080x1080",
-        category: "Feed"
-      },
-      { 
-        id: "ig-reels", 
-        name: "Reels", 
         icon: Play, 
-        description: "Vídeo vertical curto", 
-        size: "1080x1920",
-        category: "Reels"
+        description: "Stories verticais interativos"
       }
     ],
     linkedin: [
       { 
         id: "li-post", 
-        name: "Post Simples", 
-        icon: FileText, 
-        description: "Post com texto e imagem", 
-        size: "1200x627",
-        category: "Post"
-      },
-      { 
-        id: "li-carrossel", 
-        name: "Carrossel LinkedIn", 
-        icon: LayoutGrid, 
-        description: "Apresentação em slides", 
-        size: "1080x1080",
-        category: "Post"
-      },
-      { 
-        id: "li-artigo", 
-        name: "Artigo", 
-        icon: FileText, 
-        description: "Formato de artigo longo", 
-        size: "1200x627",
-        category: "Artigo"
-      },
-      { 
-        id: "li-infografico", 
-        name: "Infográfico", 
-        icon: LayoutGrid, 
-        description: "Visual informativo", 
-        size: "1080x1350",
-        category: "Post"
+        name: "Post Profissional", 
+        icon: Image, 
+        description: "Post empresarial otimizado"
       }
     ],
     tiktok: [
       { 
         id: "tt-video", 
-        name: "Vídeo Vertical", 
-        icon: Video, 
-        description: "Vídeo para TikTok", 
-        size: "1080x1920",
-        category: "Vídeo"
-      },
-      { 
-        id: "tt-stories", 
-        name: "TikTok Stories", 
-        icon: Camera, 
-        description: "Stories do TikTok", 
-        size: "1080x1920",
-        category: "Stories"
-      },
-      { 
-        id: "tt-trend", 
-        name: "Trend Template", 
-        icon: TrendingUp, 
-        description: "Template baseado em trends", 
-        size: "1080x1920",
-        category: "Vídeo"
+        name: "Vídeo Viral", 
+        icon: Play, 
+        description: "Vídeo curto e envolvente"
       }
     ]
   };
@@ -168,18 +90,16 @@ const CreatePost = () => {
     return templates[networkId as keyof typeof templates] || [];
   };
 
-
-  const themeExamples = [
-    "Promoção de Black Friday - desconto especial para clientes",
-    "Dica para melhorar produtividade no trabalho remoto",
-    "Lançamento de novo produto inovador da empresa",
-    "Depoimento de cliente satisfeito com nosso serviço",
-    "Tutorial passo a passo sobre nossa especialidade"
+  const contentExamples = [
+    "Lançamento do novo produto revolucionário da nossa empresa",
+    "Dica rápida para aumentar sua produtividade no trabalho",
+    "Promoção especial de final de ano - descontos imperdíveis",
+    "Por trás das cenas: como criamos nossos produtos"
   ];
 
   const generateContent = async () => {
-    if (!selectedObjective || !selectedNetwork || !selectedTemplate || !postTheme) {
-      toast.error("Preencha todos os campos antes de gerar o conteúdo");
+    if (!selectedNetwork || !selectedTemplate || !postContent) {
+      toast.error("Preencha todas as informações antes de gerar o conteúdo");
       return;
     }
 
@@ -187,10 +107,9 @@ const CreatePost = () => {
     try {
       const { data, error } = await supabase.functions.invoke('generate-post-content', {
         body: {
-          objective: selectedObjective,
           network: selectedNetwork,
           template: selectedTemplate,
-          theme: postTheme,
+          content: postContent,
           generateImages: true,
           generateCaption: true,
           generateHashtags: true
@@ -203,7 +122,8 @@ const CreatePost = () => {
         return;
       }
 
-      setGeneratedContent(data);
+      setGeneratedPost(data);
+      setCurrentStep(4);
       toast.success("Conteúdo gerado com sucesso!");
     } catch (error) {
       console.error('Error:', error);
@@ -213,240 +133,183 @@ const CreatePost = () => {
     }
   };
 
-  const copyToClipboard = async (text: string, type: 'caption' | 'hashtags') => {
-    try {
-      await navigator.clipboard.writeText(text);
-      if (type === 'caption') {
-        setCopiedCaption(true);
-        setTimeout(() => setCopiedCaption(false), 2000);
-      } else {
-        setCopiedHashtags(true);
-        setTimeout(() => setCopiedHashtags(false), 2000);
-      }
-      toast.success(`${type === 'caption' ? 'Legenda' : 'Hashtags'} copiada${type === 'hashtags' ? 's' : ''} para a área de transferência!`);
-    } catch (error) {
-      toast.error("Erro ao copiar texto");
+  const nextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
     }
   };
 
-  const handleCustomizationSave = (settings: any) => {
-    setCustomizationSettings(settings);
-    toast.success("Personalização aplicada com sucesso!");
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
   };
 
+  const canProceedStep1 = selectedNetwork;
+  const canProceedStep2 = selectedTemplate;
+  const canProceedStep3 = postContent.length >= 10;
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Criar Post</h1>
-        <p className="text-muted-foreground">
-          Crie conteúdo impactante para suas redes sociais com personalização completa
-        </p>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header com Progresso */}
+      <div className="text-center space-y-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Criar Post</h1>
+          <p className="text-muted-foreground">
+            Crie conteúdo profissional em 4 passos simples
+          </p>
+        </div>
+        
+        <div className="w-full max-w-md mx-auto">
+          <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
+          <div className="flex justify-between text-sm text-muted-foreground mt-2">
+            <span>Passo {currentStep}</span>
+            <span>{totalSteps} passos</span>
+          </div>
+        </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="create" className="flex items-center gap-2">
-            <Wand2 className="h-4 w-4" />
-            Gerar Conteúdo
-          </TabsTrigger>
-          <TabsTrigger value="customize" className="flex items-center gap-2">
-            <Palette className="h-4 w-4" />
-            Personalizar Template
-          </TabsTrigger>
-          <TabsTrigger value="export" className="flex items-center gap-2">
-            <Share className="h-4 w-4" />
-            Exportar
-          </TabsTrigger>
-          <TabsTrigger value="schedule" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            Agendar
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="create" className="space-y-8 mt-6">
-          {/* Conteúdo de criação existente aqui */}
-
-      {/* Seleção do Objetivo */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Qual é o objetivo do seu post?
-          </CardTitle>
-          <CardDescription>
-            Escolha o tipo de conteúdo que melhor representa sua mensagem
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {objectives.map((objective) => (
-              <div
-                key={objective.id}
-                onClick={() => setSelectedObjective(objective.id)}
-                className={`
-                  p-4 rounded-lg border cursor-pointer transition-smooth hover:scale-105
-                  ${selectedObjective === objective.id 
-                    ? 'border-primary bg-primary/10 shadow-card' 
-                    : 'border-border hover:border-primary/50'
-                  }
-                `}
-              >
-                <div className="flex flex-col items-center gap-2 text-center">
-                  <div className={`p-2 rounded-full ${objective.color} text-white`}>
-                    <objective.icon className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-medium">{objective.name}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Seleção da Rede Social */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5" />
-            Para qual rede social?
-          </CardTitle>
-          <CardDescription>
-            Selecione a plataforma onde você irá publicar
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {networks.map((network) => (
-              <div
-                key={network.id}
-                onClick={() => setSelectedNetwork(network.id)}
-                className={`
-                  p-6 rounded-lg border cursor-pointer transition-smooth hover:scale-102
-                  ${selectedNetwork === network.id 
-                    ? 'border-primary bg-primary/10 shadow-card' 
-                    : 'border-border hover:border-primary/50'
-                  }
-                `}
-              >
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <network.icon className="h-8 w-8 text-primary" />
-                  <div>
-                    <h3 className="font-semibold">{network.name}</h3>
-                    <div className="flex flex-wrap gap-1 mt-2 justify-center">
-                      {network.formats.map((format) => (
-                        <Badge key={format} variant="secondary" className="text-xs">
-                          {format}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Seleção de Template */}
-      {selectedObjective && selectedNetwork && (
-        <Card className="animate-fade-in">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <LayoutGrid className="h-5 w-5" />
-              Escolha seu template
-            </CardTitle>
+      {/* Passo 1: Escolha da Rede Social */}
+      {currentStep === 1 && (
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl">Escolha a rede social</CardTitle>
             <CardDescription>
-              Templates otimizados para {networks.find(n => n.id === selectedNetwork)?.name}
+              Onde você quer publicar seu conteúdo?
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {networks.map((network) => (
+                <div
+                  key={network.id}
+                  onClick={() => setSelectedNetwork(network.id)}
+                  className={`
+                    group p-6 rounded-xl border-2 cursor-pointer transition-smooth hover:scale-105
+                    ${selectedNetwork === network.id 
+                      ? 'border-primary bg-primary/5 shadow-card' 
+                      : 'border-border hover:border-primary/30'
+                    }
+                  `}
+                >
+                  <div className="text-center space-y-4">
+                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${network.color} flex items-center justify-center mx-auto`}>
+                      <network.icon className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg">{network.name}</h3>
+                      <p className="text-sm text-muted-foreground">{network.description}</p>
+                    </div>
+                    {selectedNetwork === network.id && (
+                      <div className="flex justify-center">
+                        <Badge className="bg-primary">Selecionado</Badge>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {canProceedStep1 && (
+              <div className="flex justify-center mt-6">
+                <Button onClick={nextStep} size="lg" className="px-8">
+                  Continuar
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Passo 2: Escolha do Template */}
+      {currentStep === 2 && (
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl">Escolha o formato</CardTitle>
+            <CardDescription>
+              Que tipo de conteúdo você quer criar para o {networks.find(n => n.id === selectedNetwork)?.name}?
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {getTemplatesForNetwork(selectedNetwork).map((template) => (
                 <div
                   key={template.id}
                   onClick={() => setSelectedTemplate(template.id)}
                   className={`
-                    group p-6 rounded-lg border cursor-pointer transition-smooth hover:scale-102
+                    group p-6 rounded-xl border-2 cursor-pointer transition-smooth hover:scale-105
                     ${selectedTemplate === template.id 
-                      ? 'border-primary bg-primary/10 shadow-card' 
-                      : 'border-border hover:border-primary/50'
+                      ? 'border-primary bg-primary/5 shadow-card' 
+                      : 'border-border hover:border-primary/30'
                     }
                   `}
                 >
-                  <div className="space-y-4">
-                    {/* Preview do Template */}
-                    <div className="relative">
-                      <div className="aspect-square bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center">
-                        <template.icon className="h-12 w-12 text-primary/60" />
-                      </div>
-                      <Badge 
-                        variant="secondary" 
-                        className="absolute top-2 right-2 text-xs"
-                      >
-                        {template.category}
-                      </Badge>
+                  <div className="text-center space-y-4">
+                    <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mx-auto">
+                      <template.icon className="h-10 w-10 text-primary" />
                     </div>
-                    
-                    {/* Informações do Template */}
-                    <div className="space-y-2">
+                    <div>
                       <h3 className="font-semibold text-lg">{template.name}</h3>
                       <p className="text-sm text-muted-foreground">{template.description}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground font-mono">
-                          {template.size}px
-                        </span>
-                        {selectedTemplate === template.id && (
-                          <Badge variant="default" className="text-xs">
-                            Selecionado
-                          </Badge>
-                        )}
-                      </div>
                     </div>
+                    {selectedTemplate === template.id && (
+                      <div className="flex justify-center">
+                        <Badge className="bg-primary">Selecionado</Badge>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
+            </div>
+            
+            <div className="flex justify-between mt-6">
+              <Button onClick={prevStep} variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Voltar
+              </Button>
+              {canProceedStep2 && (
+                <Button onClick={nextStep} size="lg">
+                  Continuar
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Entrada do Tema */}
-      {selectedObjective && selectedNetwork && selectedTemplate && (
-        <Card className="animate-fade-in">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PenTool className="h-5 w-5" />
-              Descreva o tema do seu post
-            </CardTitle>
+      {/* Passo 3: Conteúdo */}
+      {currentStep === 3 && (
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl">Conte-nos sobre seu post</CardTitle>
             <CardDescription>
-              Conte-nos sobre o que você quer comunicar. Seja específico para obter melhores resultados.
+              Descreva o que você quer comunicar. Nossa IA criará o conteúdo perfeito!
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-3">
               <Textarea
-                placeholder="Ex: Promoção de Black Friday com 30% de desconto em todos os produtos da loja..."
-                value={postTheme}
-                onChange={(e) => setPostTheme(e.target.value)}
-                className="min-h-[120px] resize-none"
+                placeholder="Ex: Quero promover o lançamento do nosso novo produto..."
+                value={postContent}
+                onChange={(e) => setPostContent(e.target.value)}
+                className="min-h-[120px] resize-none text-base"
               />
               <p className="text-sm text-muted-foreground">
-                Mínimo de 20 caracteres para gerar conteúdo de qualidade
+                Seja específico para obter melhores resultados (mín. 10 caracteres)
               </p>
             </div>
 
-            {/* Exemplos de temas */}
+            {/* Exemplos */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-yellow-500" />
-                <span className="text-sm font-medium">Exemplos de temas:</span>
-              </div>
+              <p className="text-sm font-medium text-foreground">Precisa de inspiração?</p>
               <div className="grid gap-2">
-                {themeExamples.map((example, index) => (
+                {contentExamples.map((example, index) => (
                   <button
                     key={index}
-                    onClick={() => setPostTheme(example)}
-                    className="text-left p-3 rounded-lg bg-muted/50 hover:bg-muted transition-smooth text-sm border border-transparent hover:border-border"
+                    onClick={() => setPostContent(example)}
+                    className="text-left p-3 rounded-lg bg-muted/30 hover:bg-muted transition-smooth text-sm border border-transparent hover:border-border"
                   >
                     {example}
                   </button>
@@ -454,223 +317,98 @@ const CreatePost = () => {
               </div>
             </div>
 
-            {/* Indicador de progresso */}
-            <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm text-primary font-medium">
-                IA irá gerar conteúdo personalizado baseado no seu tema
-              </span>
+            <div className="flex justify-between">
+              <Button onClick={prevStep} variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Voltar
+              </Button>
+              {canProceedStep3 && (
+                <Button 
+                  onClick={generateContent}
+                  disabled={isGenerating}
+                  size="lg"
+                  className="bg-gradient-primary"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Settings className="h-4 w-4 mr-2 animate-spin" />
+                      Gerando...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Gerar Post
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
       )}
 
-
-      {/* Botão de Geração */}
-      {selectedObjective && selectedNetwork && selectedTemplate && postTheme.length >= 20 && (
-        <div className="flex justify-center animate-fade-in">
-          <Button 
-            size="lg" 
-            className="px-8" 
-            onClick={generateContent}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <>
-                <Settings className="h-4 w-4 mr-2 animate-spin" />
-                Gerando Conteúdo...
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4 mr-2" />
-                Gerar Conteúdo com IA
-              </>
-            )}
-          </Button>
-        </div>
-      )}
-
-      {/* Conteúdo Gerado */}
-      {generatedContent && (
-        <div className="space-y-6 animate-fade-in">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                Conteúdo Gerado com Sucesso!
-              </CardTitle>
-              <CardDescription>
-                Conteúdo gerado automaticamente com IA
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          {/* Carrossel de Imagens */}
-          {generatedContent.generated_images && generatedContent.generated_images.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Image className="h-5 w-5" />
-                  Carrossel de Imagens ({generatedContent.generated_images.length} imagens)
-                </CardTitle>
-                <CardDescription>
-                  Imagens geradas automaticamente para seu carrossel
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {generatedContent.generated_images.map((image: any, index: number) => (
-                    <div key={index} className="space-y-2">
-                      <div className="aspect-square rounded-lg overflow-hidden border">
-                        {image.url && (
-                          <img 
-                            src={image.url} 
-                            alt={`Imagem do carrossel ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                        {image.b64_json && !image.url && (
-                          <img 
-                            src={`data:image/png;base64,${image.b64_json}`} 
-                            alt={`Imagem do carrossel ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Slide {index + 1}</span>
-                        <Button size="sm" variant="outline">
-                          <Download className="h-3 w-3 mr-1" />
-                          Download
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Legenda */}
-          {generatedContent.caption && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Legenda do Post
-                </CardTitle>
-                <CardDescription>
-                  Texto engajante e persuasivo para sua publicação
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <p className="whitespace-pre-wrap">{generatedContent.caption}</p>
+      {/* Passo 4: Post Gerado */}
+      {currentStep === 4 && generatedPost && (
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl flex items-center justify-center gap-2">
+              <Check className="h-6 w-6 text-green-500" />
+              Post Criado com Sucesso!
+            </CardTitle>
+            <CardDescription>
+              Seu conteúdo foi gerado e está pronto para uso
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Preview do Post Gerado */}
+            <div className="bg-muted/30 rounded-lg p-6 space-y-4">
+              <div className="text-center">
+                <Badge className="mb-4">{networks.find(n => n.id === selectedNetwork)?.name}</Badge>
+                <div className="aspect-square max-w-sm mx-auto bg-white rounded-lg shadow-card p-4 flex items-center justify-center">
+                  <div className="text-center space-y-2">
+                    <Image className="h-12 w-12 text-primary mx-auto" />
+                    <p className="text-sm font-medium">Post Visual</p>
+                    <p className="text-xs text-muted-foreground">Imagem será gerada aqui</p>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => copyToClipboard(generatedContent.caption, 'caption')}
-                    className="w-full"
-                  >
-                    {copiedCaption ? (
-                      <>
-                        <Check className="h-4 w-4 mr-2" />
-                        Copiado!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copiar Legenda
-                      </>
-                    )}
-                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Hashtags */}
-          {generatedContent.hashtags && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Hashtags Otimizadas
-                </CardTitle>
-                <CardDescription>
-                  Hashtags relevantes e estratégicas para maximizar o alcance
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex flex-wrap gap-2">
-                    {generatedContent.hashtags.map((hashtag: string, index: number) => (
-                      <Badge key={index} variant="secondary" className="text-sm">
-                        {hashtag.startsWith('#') ? hashtag : `#${hashtag}`}
-                      </Badge>
-                    ))}
+              </div>
+              
+              {generatedPost.caption && (
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm">Legenda:</h4>
+                  <div className="bg-background rounded-lg p-3 text-sm">
+                    {generatedPost.caption}
                   </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => copyToClipboard(generatedContent.hashtags.map((h: string) => h.startsWith('#') ? h : `#${h}`).join(' '), 'hashtags')}
-                    className="w-full"
-                  >
-                    {copiedHashtags ? (
-                      <>
-                        <Check className="h-4 w-4 mr-2" />
-                        Copiado!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copiar Hashtags
-                      </>
-                    )}
-                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+              )}
+              
+              {generatedPost.hashtags && (
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm">Hashtags:</h4>
+                  <div className="bg-background rounded-lg p-3 text-sm text-primary">
+                    {generatedPost.hashtags}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-between gap-4">
+              <Button onClick={prevStep} variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Editar Post
+              </Button>
+              <div className="flex gap-2">
+                <Button variant="secondary">
+                  Baixar Imagem
+                </Button>
+                <Button className="bg-gradient-primary">
+                  Publicar Agora
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
-        </TabsContent>
-
-        <TabsContent value="customize" className="space-y-6 mt-6">
-          <TemplateCustomizer 
-            templateData={selectedTemplate ? { id: selectedTemplate, network: selectedNetwork } : null}
-            onSave={handleCustomizationSave}
-          />
-        </TabsContent>
-
-        <TabsContent value="export" className="space-y-6 mt-6">
-          {generatedContent ? (
-            <SocialExport
-              content={generatedContent}
-              selectedNetwork={selectedNetwork}
-              selectedTemplate={selectedTemplate}
-            />
-          ) : (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Share className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Nenhum conteúdo para exportar</h3>
-                <p className="text-muted-foreground">
-                  Gere um conteúdo primeiro para poder exportá-lo para as redes sociais
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="schedule" className="space-y-6 mt-6">
-          <PostScheduler
-            content={generatedContent}
-            selectedNetwork={selectedNetwork}
-            selectedTemplate={selectedTemplate}
-          />
-        </TabsContent>
-      </Tabs>
     </div>
   );
 };
