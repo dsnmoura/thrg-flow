@@ -16,6 +16,15 @@ export interface Template {
       placeholder: string;
     }>;
   };
+  // Propriedades opcionais para compatibilidade com MonthlyTemplate
+  releaseDate?: string;
+  isNew?: boolean;
+  isSeasonal?: boolean;
+  seasonalPeriod?: {
+    start: string;
+    end: string;
+  };
+  trending?: boolean;
 }
 
 interface TemplateContextType {

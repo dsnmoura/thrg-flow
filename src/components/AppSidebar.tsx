@@ -29,6 +29,7 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Criar Post", url: "/dashboard/create", icon: PlusCircle },
   { title: "Templates", url: "/dashboard/templates", icon: Image },
+  { title: "Banco de Templates", url: "/dashboard/template-manager", icon: Sparkles },
   { title: "Agendamento", url: "/dashboard/schedule", icon: Calendar },
   { title: "Análises", url: "/dashboard/analytics", icon: BarChart3 },
 ];

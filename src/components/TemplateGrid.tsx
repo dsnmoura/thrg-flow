@@ -199,7 +199,7 @@ const TemplateGrid = () => {
               <h3 className="text-lg font-semibold">Template Selecionado</h3>
               <Button 
                 variant="default" 
-                onClick={() => handleCustomize(selectedTemplate)}
+                onClick={() => handleCustomize(selectedTemplate as any)}
                 className="gradient-primary"
               >
                 Começar a Personalizar

@@ -11,6 +11,7 @@ import DashboardLayout from "./pages/dashboard/DashboardLayout";
 import DashboardOverview from "./pages/dashboard/DashboardOverview";
 import CreatePost from "./pages/dashboard/CreatePost";
 import Templates from "./pages/dashboard/Templates";
+import TemplateManager from "./pages/dashboard/TemplateManager";
 import Schedule from "./pages/dashboard/Schedule";
 import Analytics from "./pages/dashboard/Analytics";
 import Settings from "./pages/dashboard/Settings";
@@ -31,6 +32,7 @@ const App = () => (
               <Route index element={<DashboardOverview />} />
               <Route path="create" element={<CreatePost />} />
               <Route path="templates" element={<Templates />} />
+              <Route path="template-manager" element={<TemplateManager />} />
               <Route path="schedule" element={<Schedule />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="settings" element={<Settings />} />
